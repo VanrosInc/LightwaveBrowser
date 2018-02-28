@@ -416,11 +416,198 @@ namespace LightwaveBrowser.Data
         /// <typeparam name="T">The class that extends apon IBookmarkable.</typeparam>
         /// <returns>An IReadOnlyList of IBookmarkable typed classes.</returns>
         [Obsolete()]
-        public IReadOnlyList<T> GetBookmarkable<T>() where T: IBookmarkable
+        public IReadOnlyList<T> GetBookmarkable<T>() where T : IBookmarkable
         {
             return bookmarks as IReadOnlyList<T>;
         }
 
+        /// <summary>
+        /// Saves all the IBookmarkable bookmarks that was passed to a file at the specified location as a binary-based string.
+        /// </summary>
+        /// <param name="bookmarkable">The bookmars to save.</param>
+        /// <param name="path">The path to the file to save the bookmarks to.</param>
+        public static void SaveBookmarks(IBookmarkable[] bookmarkable, string path)
+        {
+            var bin = Serialization.BinarySerialization.Serialize(bookmarkable);
+            Serialization.FileSerializer.Write(path, bin);
+        }
 
+        /// <summary>
+        /// Reads all the IBookmarkable bookmarks from a file at the specified location.
+        /// </summary>
+        /// <param name="path">The location to the bookmarks file.</param>
+        /// <returns>The bookmarks that where read from the file.</returns>
+        public static IBookmarkable[] ReadBookmarks(string path)
+        {
+            var data = Serialization.FileSerializer.Read(path);
+            return Serialization.BinarySerialization.Deserialize<IBookmarkable[]>(data);
+        }
+    }
+
+    public interface IHistory
+    {
+        string Name { get; }
+        string Password { get; set; }
+        DateTime TimeCreated { get; }
+        Uri Source { get;}
+        Image Favicon { get; }
+        Guid ID { get; }
+    }
+
+    public class History : IHistory
+    {
+        private string _name = "";
+        private string _pass = "";
+        private DateTime _time = DateTime.MinValue;
+        private Uri _source = null;
+        private Image _favicon = null;
+        private Guid _id = Guid.Empty;
+        
+        public History(string name, Uri source, string pass = "", Image favicon = null)
+        {
+            _name = name;
+            _source = source;
+            _pass = pass;
+            if (favicon == null || favicon == new Bitmap(0, 0))
+                _favicon = Properties.Resources.BlankPage;
+            else
+                _favicon = favicon;
+            _time = DateTime.Now;
+            _id = Guid.NewGuid();
+        }
+
+
+        public string Name => _name;
+
+        public string Password { get => _pass; set => _pass = value; }
+
+        public DateTime TimeCreated => _time;
+
+        public Uri Source => _source;
+
+        public Image Favicon => _favicon;
+
+        public Guid ID => _id;
+    }
+
+    public sealed class HistoryManager
+    {
+        private List<History> history = null;
+
+        public HistoryManager()
+        {
+            history = new List<History>();
+        }
+
+        /// <summary>
+        /// Adds History to the internal history registry.
+        /// </summary>
+        /// <param name="history">The history item to add.</param>
+        public void AddBookmark(History history)
+        {
+            this.history.Add(history);
+        }
+
+        /// <summary>
+        /// Adds an array of History to the internal history registry.
+        /// </summary>
+        /// <param name="history">The array of history items to add.</param>
+        public void AddBookmarks(History[] history)
+        {
+            foreach (History hist in history)
+            {
+                AddBookmark(hist);
+            }
+        }
+
+        /// <summary>
+        /// Removes History from the internal history registry.
+        /// </summary>
+        /// <param name="history">The history item to remove.</param>
+        public void RemoveBookmark(History history)
+        {
+            this.history.Add(history);
+        }
+
+        /// <summary>
+        /// Removes an array of History from the internal registry.
+        /// </summary>
+        /// <param name="history">The array of history items to remove.</param>
+        public void RemoveBookmarks(History[] history)
+        {
+            foreach (History hist in history)
+            {
+                RemoveBookmark(hist);
+            }
+        }
+
+        /// <summary>
+        /// Gets the history item with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the history item to get.</param>
+        /// <returns>The history item with the specified name.</returns>
+        public History GetHistory(string name)
+        {
+            History history = null;
+            foreach (History hist in this.history)
+            {
+                if (hist.Name == name)
+                {
+                    history = hist;
+                    break;
+                }
+            }
+            return history;
+        }
+
+        /// <summary>
+        /// Gets the history item with the specified ID.
+        /// </summary>
+        /// <param name="id">The Unique ID of the history item. </param>
+        /// <returns>The history item with the specified ID.</returns>
+        public History GetHistory(Guid id)
+        {
+            History history = null;
+            foreach (History hist in this.history)
+            {
+                if (hist.ID == id)
+                {
+                    history = hist;
+                    break;
+                }
+            }
+            return history;
+        }
+
+        /// <summary>
+        /// Gets all history items from the internal history registry as an IReadOnlyList.
+        /// </summary>
+        /// <returns>Gets an IReadOnlyList of all history items in the history registry.</returns>
+        public IReadOnlyList<History> GetHistory()
+        {
+            return history;
+        }
+
+        /// <summary>
+        /// Saves history to a file at the specified location.
+        /// </summary>
+        /// <param name="path">The history file path.</param>
+        /// <param name="history">The history data to save to the file.</param>
+        public static void SaveHistory(string path, History[] history)
+        {
+            var bin = Serialization.BinarySerialization.Serialize(history);
+            Serialization.FileSerializer.Write(path, bin);
+        }
+
+        /// <summary>
+        /// Reads history from a file at the specified location.
+        /// </summary>
+        /// <param name="path">The path to the history file.</param>
+        /// <returns>The history data read from the file.</returns>
+        public static History[] ReadHistory(string path)
+        {
+            var data = Serialization.FileSerializer.Read(path);
+            return Serialization.BinarySerialization.Deserialize<History[]>(data);
+        }
     }
 }
