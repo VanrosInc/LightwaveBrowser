@@ -1,0 +1,334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5E0FF919-86E0-4CB0-90FA-8064ED027354}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LightwaveBrowser</RootNamespace>
+    <AssemblyName>LightwaveBrowser</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Awesomium.Core, Version=1.7.5.1, Culture=neutral, PublicKeyToken=e1a0d7c8071a5214, processorArchitecture=x86" />
+    <Reference Include="Awesomium.Windows.Controls, Version=1.7.5.1, Culture=neutral, PublicKeyToken=7a34e179b8b61c39, processorArchitecture=x86" />
+    <Reference Include="Awesomium.Windows.Forms, Version=1.7.5.1, Culture=neutral, PublicKeyToken=9bd24830fbe304a0, processorArchitecture=x86" />
+    <Reference Include="EasyTabs, Version=1.3.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EasyTabs.1.3.3.0\lib\net40\EasyTabs.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EasyTabs.1.3.3.0\lib\net40\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EasyTabs.1.3.3.0\lib\net40\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Win32Interop.Dwmapi, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Win32Interop.Dwmapi.1.0.1\lib\Win32Interop.Dwmapi.dll</HintPath>
+    </Reference>
+    <Reference Include="Win32Interop.Gdi32, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Win32Interop.Gdi32.1.0.1\lib\Win32Interop.Gdi32.dll</HintPath>
+    </Reference>
+    <Reference Include="Win32Interop.Kernel32, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Win32Interop.Kernel32.1.0.1\lib\Win32Interop.Kernel32.dll</HintPath>
+    </Reference>
+    <Reference Include="Win32Interop.User32, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Win32Interop.User32.1.0.1\lib\Win32Interop.User32.dll</HintPath>
+    </Reference>
+    <Reference Include="Win32Interop.Uxtheme, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Win32Interop.Uxtheme.1.0.1\lib\Win32Interop.Uxtheme.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="YamlDotNet, Version=4.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.4.3.1\lib\net45\YamlDotNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AppContainer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BinarySerialization.cs" />
+    <Compile Include="Browser.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Browser.Designer.cs">
+      <DependentUpon>Browser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Data.cs" />
+    <Compile Include="FileEncryption.cs" />
+    <Compile Include="LightwaveTabRenderer.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="LightwaveApps.cs" />
+    <Compile Include="MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainWindow.Designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="ToolstripColortable.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Browser.resx">
+      <DependentUpon>Browser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainWindow.resx">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\519672-178_Download-128.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BlankPage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BlankPage_FTP.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BlankPage_HTTP.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BlankPage_HTTPS.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\bookmark.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\bookmark_saved.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\bookmarkbar_add-bookmark.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\c6a6ebcd1a2d9ecbd4311f8a4048c3c2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\download_Complete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\download_error.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\download_normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\download_paused.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\file-512.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\folder_locked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\folder_unlocked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lock.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Navigete_Back_Disabled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Navigete_Back_Normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Navigete_Forward_Disabled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Navigete_Forward_Normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tab_close_normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tab_close_click.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tab_close_hover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DiscordApp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MessengerApp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SkypeApp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinned_Default.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinned_Pinned.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinned_Pinned_Light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\refresh_light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\stop_light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinned_Default_Light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\video-e1484063311198.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WhatsApp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="AxSHDocVw">
+      <Guid>{EAB22AC0-30C1-11CF-A7EB-0000C05BAE0B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>1</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>aximp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="SHDocVw">
+      <Guid>{EAB22AC0-30C1-11CF-A7EB-0000C05BAE0B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>1</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_Tab_Left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_Tab_Right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_TabCenter.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_Close_Click.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_Tab_Background.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_Close_Hover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_NewTab.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_NewTab_Hover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_Close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ChromeClose.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ChromeCloseHover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_TabCenter_Inactive.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_TabCenter_Inactive_Left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Lightwave_TabCenter_Inactive_Right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ChromeAddHover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ChromeAdd.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
