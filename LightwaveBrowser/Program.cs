@@ -27,21 +27,21 @@ namespace LightwaveBrowser
             Application.SetCompatibleTextRenderingDefault(false);
             try
             {
-                AppContainer container = new AppContainer();
-                container.Tabs.Add(new TitleBarTab(container)
-                {
-                    Content = new MainWindow
-                    {
-                        Text = "New Tab"
-                    }
-                });
+                //AppContainer container = new AppContainer();
+                //container.Tabs.Add(new TitleBarTab(container)
+                //{
+                //    Content = new MainWindow
+                //    {
+                //        Text = "New Tab"
+                //    }
+                //});
 
-                container.SelectedTabIndex = 0;
+                //container.SelectedTabIndex = 0;
 
-                TitleBarTabsApplicationContext applicationContext = new TitleBarTabsApplicationContext();
-                applicationContext.MainForm.WindowState = FormWindowState.Normal;
-                applicationContext.Start(container);
-                Application.Run(applicationContext);
+                //TitleBarTabsApplicationContext applicationContext = new TitleBarTabsApplicationContext();
+                //applicationContext.MainForm.WindowState = FormWindowState.Normal;
+                //applicationContext.Start(container);
+                Application.Run(new MainWindow());
             }
             catch (Exception ex)
             {

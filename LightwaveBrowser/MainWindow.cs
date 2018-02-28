@@ -1,4 +1,5 @@
-﻿using EasyTabs;
+﻿using Awesomium.Windows.Forms;
+using EasyTabs;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,8 @@ namespace LightwaveBrowser
             InitializeComponent();
         }
 
+        private Util.LightwaveURLManager LightwaveURLManager;
+
         protected TitleBarTabs ParentTabs
         {
             get => (ParentForm as TitleBarTabs);
@@ -26,38 +29,21 @@ namespace LightwaveBrowser
 
         private void MainWindow_Load(object sender, EventArgs e)
         {
-            
+            LightwaveURLManager = new Util.LightwaveURLManager(webControl1);
             this.WindowState = FormWindowState.Normal;
         }
-        
-        private void browser1_Load(object sender, EventArgs e)
-        {
 
+        public WebControl GetWebControl()
+        {
+            return webControl1;
         }
 
-        private void Awesomium_Windows_Forms_WebControl_ShowCreatedWebView(object sender, Awesomium.Core.ShowCreatedWebViewEventArgs e)
+        private void textBox1_KeyUp(object sender, KeyEventArgs e)
         {
-
-        }
-
-        private void Awesomium_Windows_Forms_WebControl_LoadingFrameComplete(object sender, Awesomium.Core.FrameEventArgs e)
-        {
-
-        }
-
-        private void Awesomium_Windows_Forms_WebControl_LoadingFrame(object sender, Awesomium.Core.LoadingFrameEventArgs e)
-        {
-
-        }
-
-        private void SocialTitle_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void MainWindow_MouseEnter(object sender, EventArgs e)
-        {
-
+            if (e.KeyCode == Keys.Enter)
+            {
+                LightwaveURLManager.Navigate(textBox1.Text);
+            }
         }
     }
 }
