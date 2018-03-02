@@ -29,7 +29,7 @@ namespace LightwaveBrowser
             // Set the various positioning properties
             CloseButtonMarginTop = 6;
             CloseButtonMarginLeft = 0;
-            AddButtonMarginTop = 2;
+            AddButtonMarginTop = 5;
             AddButtonMarginLeft = -10;
             CaptionMarginTop = 6;
             CaptionMarginLeft = 2;

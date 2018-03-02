@@ -2,15 +2,104 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace LightwaveBrowser.Util
 {
     public sealed class BrowserUtils
     {
+        private static SearchProvider _provider = null;
+        public static SearchProvider SearchProvider
+        {
+            get
+            {
+                if (_provider == null)
+                {
+                    return DefaultSearchProviders.Google();
+                }
+                return _provider;
+            }
+            set => _provider = value;
+        }
+    }
+    //https://search.yahoo.com/search?p=yahoo - Yahoo
+    //https://www.bing.com/search?q=bing - Bing
+
+    public sealed class DefaultSearchProviders
+    {
+        public static SearchProvider Google()
+        {
+            var provider = new SearchProvider();
+            provider.Provider = "Google";
+            provider.Source = new Uri("http://www.google.com");
+            provider.SearchSource = new Uri($"{provider.Source}/search?q=");
+            provider.Favicon = new Uri($"{provider.Source}/favicon.ico");
+            return provider;
+        }
+        public static SearchProvider Yahoo()
+        {
+            var provider = new SearchProvider();
+            provider.Provider = "Yahoo";
+            provider.Source = new Uri("http://www.yahoo.com");
+            provider.SearchSource = new Uri($"http://search.yahoo.com/search?p=");
+            provider.Favicon = new Uri($"{provider.Source}/favicon.ico");
+            return provider;
+        }
+        public static SearchProvider Bing()
+        {
+            var provider = new SearchProvider();
+            provider.Provider = "Bing";
+            provider.Source = new Uri("http://www.bing.com");
+            provider.SearchSource = new Uri($"{provider.Source}/search?q=");
+            provider.Favicon = new Uri($"{provider.Source}/favicon.ico");
+            return provider;
+        }
+        public static SearchProvider Wikipedia()
+        {
+            var provider = new SearchProvider();
+            provider.Provider = "Wikipedia";
+            provider.Source = new Uri("http://en.wikipedia.org/");
+            provider.SearchSource = new Uri($"http://en.wikipedia.org/wiki/");
+            provider.Favicon = new Uri($"{provider.Source}/favicon.ico");
+            return provider;
+        }
+    }
+
+    public class SearchProvider
+    {
+        private string _providerName = "";
+        private Uri _providerSource = null;
+        private Uri _proverserSearchSource = null;
+        private Uri _providerFavicon = null;
+
+        public SearchProvider()
+        {
+
+        }
         
+        public string Provider
+        {
+            get => _providerName;
+            set => _providerName = value;
+        }
+
+        public Uri Source
+        {
+            get => _providerSource;
+            set => _providerSource = value;
+        }
+
+        public Uri SearchSource
+        {
+            get => _proverserSearchSource;
+            set => _proverserSearchSource = value;
+        }
+
+        public Uri Favicon
+        {
+            get => _providerFavicon;
+            set => _providerFavicon = value;
+        }
     }
 
     public interface ILightwaveURL
@@ -22,14 +111,17 @@ namespace LightwaveBrowser.Util
 
     public abstract class NamedURL : ILightwaveURL
     {
+        private bool isSubName = false;
         private string _name = "";
         private Guid _id = Guid.Empty;
+        private NamedURL _parentName = null;
         private List<NamedURL> _subNames;
 
         public NamedURL(string name, NamedURL[] subNames = null)
         {
             _subNames = new List<NamedURL>(); 
             _name = name;
+            isSubName = false;
             if (!(subNames == null))
             {
                 AddSubNames(subNames);
@@ -67,6 +159,8 @@ namespace LightwaveBrowser.Util
         /// <param name="subNamedURL">The sub-name to add.</param>
         public void AddSubName(NamedURL subNamedURL)
         {
+            subNamedURL._parentName = this;
+            subNamedURL.isSubName = true;
             _subNames.Add(subNamedURL);
         }
 
@@ -135,6 +229,16 @@ namespace LightwaveBrowser.Util
                 }
             }
             return namedURL;
+        }
+
+        public static NamedURL GetFinalNamedURL(NamedURL startingName, string[] subNames)
+        {
+            NamedURL r = startingName;
+            for (int i = 0; i == subNames.Length; i++)
+            {
+                r = r.GetSubName(subNames[i]);
+            }
+            return r;
         }
     }
 
@@ -211,81 +315,67 @@ namespace LightwaveBrowser.Util
             return lightwaveURLs;
         }
 
+        /// <summary>
+        /// Navigates to the specified URL or searches for a value if it's not a URL.
+        /// </summary>
+        /// <param name="rawSource">The original non-parsed string.</param>
         public void Navigate(string rawSource)
         {
             try
             {
-                /*
-                 * 
-                 */
-                if (!(Uri.TryCreate(rawSource, UriKind.RelativeOrAbsolute, out Uri url)) || Limited(url) || url.ToString().StartsWith("lightwave://"))
+                if (!(Uri.TryCreate(rawSource, UriKind.RelativeOrAbsolute, out Uri url)) || Limited(url))
                 {
-                    Console.WriteLine("URI Source was not valid URI!");
-                    if (rawSource.StartsWith("lightwave://"))
-                    {
-                        try
-                        {
-                            //Parse LightwaveURLs.
-                            var lightwave = Regex.Split(rawSource, "lightwave://");
-                            var names = Regex.Split(lightwave[0], "/");
-                            var name = names[0];
-                            var subnames = names.Skip(1).ToArray();
-                            var n = GetNamedURL(name);
-                            if (n == null)
-                            {
-                                Console.WriteLine("That is not a lightwaveURL!");
-                                //TODO: Create error page for unknown LightwaveURLs.
-
-                                return;
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    if (subnames.Length != 0)
-                                    {
-                                        NamedURL currentName = n;
-                                        for (int i = 0; i == subnames.Length; i++)
-                                        {
-                                            currentName = currentName.GetSubName(subnames[i]);
-                                        }
-
-                                        currentName.Action(_webControl);
-                                    }
-                                }
-                                catch
-                                {
-                                    Console.WriteLine($"One or more of the SubNames in the URL where invalid!");
-                                    //TODO: Create error page for invalid SubName.
-
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.ToString());
-                        }
-
-                    }
-                    else
-                    {
-                        //Search for query.
-                        Console.WriteLine($"Searching for: \"{rawSource}\"");
-                        _webControl.Source = (new Uri("http://www.google.com/search?q=" + $"{rawSource}"));
-                        _webControl.Update();
-                    }
+                    System.Diagnostics.Debug.WriteLine($"Searching for: \"{url.OriginalString}\"...");
+                    var searchUrl = new Uri($"{BrowserUtils.SearchProvider.SearchSource}{url.ToString()}");
                 }
                 else
                 {
-                    Console.WriteLine($"Attempting to navigate to: \"{url.ToString()}\"...");
-                    _webControl.Source = url;
-                    _webControl.Update();
-                    Console.WriteLine($"Navigation to: \"{url.ToString()}\" complete!");
+                    System.Diagnostics.Debug.WriteLine($"Attempting to navigate to: \"{url.ToString()}\"...");
+                    if (url.ToString().StartsWith("lightwave://"))
+                    {
+                        System.Diagnostics.Debug.WriteLine("Navigating to a LightwaveURL...");
+                        var u = url.ToString();
+                        u = Regex.Replace(u, "lightwave://", "");
+                        var x = u.Split('/');
+                        var name = x[0];
+                        System.Diagnostics.Debug.WriteLine($"Found: {name}.");
+                        var subnames = x.Skip(1).ToArray();
+                        System.Diagnostics.Debug.WriteLine("Checking LightwaveURL");
+                        var named = NamedURL.GetFinalNamedURL(GetNamedURL(name), subnames);
+                        if (named == null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"The webpage at \"{url.ToString()}\" may be down or it may have been moved to a new address!");
+                            Console.WriteLine();
+                            //TODO: Create error page.
+                            
+                        }
+                        else
+                        {
+                            try
+                            {
+                                named.Action(_webControl);
+                                System.Diagnostics.Debug.WriteLine($"Navigated to: \"{url.ToString()}\" successfully!");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                                //TODO: Create error page.
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Navigating to: \"{url.ToString()}\"...");
+                        _webControl.Source = url;
+                        _webControl.Update();
+                        System.Diagnostics.Debug.WriteLine("Navigation Complete!");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
             }
         }
 
@@ -354,6 +444,7 @@ namespace LightwaveBrowser.Util
 
             //TODO: Delete or comment debug code.
             webBrowser.Source = new Uri("http://www.google.com/");
+            webBrowser.Update();
         }
     }
 
@@ -365,6 +456,17 @@ namespace LightwaveBrowser.Util
         {
             //TODO: Implement flags.
 
+        }
+    }
+}
+
+namespace LightwaveBrowser.Util.TaskManagement
+{
+    public class JumpLists
+    {
+        private JumpLists()
+        {
+               
         }
     }
 }

@@ -29,20 +29,20 @@ namespace LightwaveBrowser
 
         private void MainWindow_Load(object sender, EventArgs e)
         {
-            LightwaveURLManager = new Util.LightwaveURLManager(webControl1);
+            //LightwaveURLManager = new Util.LightwaveURLManager(webControl1);
             this.WindowState = FormWindowState.Normal;
         }
 
-        public WebControl GetWebControl()
-        {
-            return webControl1;
-        }
+        //public WebControl GetWebControl()
+        //{
+        //    //return webControl1;
+        //}
 
         private void textBox1_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                LightwaveURLManager.Navigate(textBox1.Text);
+                //LightwaveURLManager.Navigate(textBox1.Text);
             }
         }
     }
