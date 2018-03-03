@@ -1,4 +1,5 @@
-﻿using Awesomium.Windows.Forms;
+﻿using CefSharp;
+using CefSharp.WinForms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +22,36 @@ namespace LightwaveBrowser.Util
             }
             set => _provider = value;
         }
+        private static string _lwVersion = "0.0.0.25b";
+        public static string LightwaveVersion => _lwVersion;
+        private static UserAgent _agent = UserAgent.LightwaveWindowsUA;
+        public static UserAgent UserAgent
+        {
+            get => _agent;
+            set => _agent = value;
+        }
+        private static IO.Directory _installDir = new IO.Directory($@"{IO.Directory.ProgramFiles}\Vanros\Lightwave\{LightwaveVersion}");
+        private static IO.Directory _dataDir = new IO.Directory($@"{IO.Directory.AppData.Path}\Lightwave Browser\Data");
+        private static IO.Directory _logsDir = new IO.Directory($@"{_dataDir}\Logs");
+        private static IO.Directory _extentionsDir = new IO.Directory($@"{_dataDir}\Extentions");
+        private static IO.Directory _extentionConfigDir = new IO.Directory($@"{_extentionsDir}\Config");
+        private static IO.Directory _themeDirectory = new IO.Directory($@"{_dataDir}\Themes");
+        private static IO.Directory _syncData = new IO.Directory($@"{_dataDir}\SyncData");
+        private static IO.Directory _downloads = new IO.Directory(IO.Directory.Downloads.Path);
+        public static IO.Directory InstallDirectory => _installDir;
+        public static IO.Directory DataDirectory => _dataDir;
+        public static IO.Directory LogDirectory => _logsDir;
+        public static IO.Directory ExtentionsDirectory => _extentionsDir;
+        public static IO.Directory ExtentionConfigDirectory => _extentionConfigDir;
+        public static IO.Directory ThemesDirectory => _themeDirectory;
+        public static IO.Directory SyncDataDirectory => _syncData;
+        public static IO.Directory DownloadsFolder
+        {
+            get => _downloads;
+            set => _downloads = value;
+        }
+
     }
-    //https://search.yahoo.com/search?p=yahoo - Yahoo
-    //https://www.bing.com/search?q=bing - Bing
 
     public sealed class DefaultSearchProviders
     {
@@ -102,361 +130,142 @@ namespace LightwaveBrowser.Util
         }
     }
 
-    public interface ILightwaveURL
+    public struct UserAgent
     {
-        string Name { get; }
-        Guid ID { get; }
-        void Action(WebControl webBrowser);
+        private string _agent;
+        private OSTypes _OS;
+        public UserAgent(string agent, OSTypes os = OSTypes.UNSPECIFIED)
+        {
+            _agent = agent;
+            _OS = os;
+        }
+
+        public string GetUserAgent()
+        {
+            return _agent;
+        }
+
+        public OSTypes GetOS()
+        {
+            return _OS;
+        }
+
+        public override string ToString()
+        {
+            return _agent;
+        }
+
+        #region WindowsUserAgents
+        public static UserAgent Explorer11WindowsUA => new UserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko", OSTypes.WINDOWS);
+        public static UserAgent EdgeWindowsUA => new UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240", OSTypes.WINDOWS);
+        public static UserAgent FirefoxWindowsUA => new UserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0", OSTypes.WINDOWS);
+        public static UserAgent ChromeWindowsUA => new UserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36", OSTypes.WINDOWS);
+        public static UserAgent OperaWindowsUA => new UserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.31", OSTypes.WINDOWS);
+        public static UserAgent LightwaveWindowsUA => new UserAgent($"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 LWave/{BrowserUtils.LightwaveVersion}", OSTypes.WINDOWS);
+        #endregion
+
+        #region MacUserAgents
+        public static UserAgent SafariUA => new UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A", OSTypes.MAC);
+        public static UserAgent OperaMacUA => new UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.31", OSTypes.MAC);
+        public static UserAgent FirefoxMacUA => new UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0", OSTypes.MAC);
+        public static UserAgent ChromeMacUA => new UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36", OSTypes.MAC);
+        public static UserAgent LightwaveMacUA => new UserAgent($"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 LWave/{BrowserUtils.LightwaveVersion}", OSTypes.MAC);
+        #endregion
+
+        #region LinuxUserAgents
+
+        #endregion
+
+        public enum OSTypes
+        {
+            WINDOWS = 1, LINUX = 2, MAC = 3, ANDROID = 4, IOS = 5, WINDOWS_PHONE = 6, XBOX = 7, OTHER = 8, UNSPECIFIED = 0
+        }
     }
 
-    public abstract class NamedURL : ILightwaveURL
+    public class Browser
     {
-        private bool isSubName = false;
-        private string _name = "";
-        private Guid _id = Guid.Empty;
-        private NamedURL _parentName = null;
-        private List<NamedURL> _subNames;
+        private ChromiumWebBrowser _browser = null;
 
-        public NamedURL(string name, NamedURL[] subNames = null)
+        public Browser(System.Windows.Forms.Form form)
         {
-            _subNames = new List<NamedURL>(); 
+            _browser = new ChromiumWebBrowser("");
+            _browser.Dock = System.Windows.Forms.DockStyle.Fill;
+            form.Controls.Add(_browser);
+            _browser.AddressChanged += _browser_AddressChanged;
+            _browser.FrameLoadStart += _browser_FrameLoadStart;
+            _browser.FrameLoadEnd += _browser_FrameLoadEnd;
+            _browser.LoadError += _browser_LoadError;
+        }
+
+        private void _browser_LoadError(object sender, LoadErrorEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void _browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void _browser_FrameLoadStart(object sender, FrameLoadStartEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void _browser_AddressChanged(object sender, AddressChangedEventArgs e)
+        {
+            var browser = e.Browser;
+            
+            
+        }
+    }
+
+    public interface IBrowserURL
+    {
+        string Name { get; set; }
+        Guid ID();
+        void Navigated(Browser browser);
+    }
+
+    public class LightwaveURL : IBrowserURL
+    {
+        private string _name;
+        private Guid _id;
+
+        string IBrowserURL.Name { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public LightwaveURL(string name)
+        {
             _name = name;
-            isSubName = false;
-            if (!(subNames == null))
-            {
-                AddSubNames(subNames);
-            }
             _id = Guid.NewGuid();
         }
 
-        /// <summary>
-        /// Gets the name of this NamedURL. 
-        /// </summary>
-        public string Name => _name;
-
-        /// <summary>
-        /// Gets the unigue constructor-set ID of this NamedURL.
-        /// </summary>
-        public Guid ID => _id;
-
-        /// <summary>
-        /// Gets all registered sub-names of this NamedURL.
-        /// </summary>
-        public IReadOnlyList<NamedURL> SubNames()
+        public string Name()
         {
-            return _subNames;
+            return _name;
         }
 
-        /// <summary>
-        /// This function is run everytime the browser detects that this NamedURL is found in its URL bar.
-        /// </summary>
-        /// <param name="webBrowser">The Parent Web Browsers web browser control.</param>
-        public abstract void Action(WebControl webBrowser);
-
-        /// <summary>
-        /// Adds a valid sub-name of NamedURL to this NamedURL.
-        /// </summary>
-        /// <param name="subNamedURL">The sub-name to add.</param>
-        public void AddSubName(NamedURL subNamedURL)
+        public Guid ID()
         {
-            subNamedURL._parentName = this;
-            subNamedURL.isSubName = true;
-            _subNames.Add(subNamedURL);
+            return ID();
         }
 
-        /// <summary>
-        /// Adds an array of valid NamedURL sub-names to this NamedURL
-        /// </summary>
-        /// <param name="subNamedURLs">The sub-names to add.</param>
-        public void AddSubNames(NamedURL[] subNamedURLs)
-        {
-            foreach (NamedURL subName in subNamedURLs)
-                AddSubName(subName);
-        }
-
-        /// <summary>
-        /// Removes a NamedURL sub-name from this NamedURL.
-        /// </summary>
-        /// <param name="subNamedURL">The sub-name to remove.</param>
-        public void RemoveSubName(NamedURL subNamedURL)
-        {
-            _subNames.Add(subNamedURL);
-        }
-
-        /// <summary>
-        /// Removes an array of NamedURL sub-names from this NamedURL.
-        /// </summary>
-        /// <param name="subNamedURLs">The sub-names to remove.</param>
-        public void RemoveSubNames(NamedURL[] subNamedURLs)
-        {
-            foreach (NamedURL subName in subNamedURLs)
-                AddSubName(subName);
-        }
-
-        /// <summary>
-        /// Gets a valid NamedURL sub-name from this NamedURL.
-        /// </summary>
-        /// <param name="name">The name of the sub-name to get.</param>
-        /// <returns>The NamedURL sub-name.</returns>
-        public NamedURL GetSubName(string name)
-        {
-            NamedURL namedURL = null;
-            foreach (NamedURL named in SubNames())
-            {
-                if (named.Name == name)
-                {
-                    namedURL = named;
-                    break;
-                }
-            }
-            return namedURL;
-        }
-
-        /// <summary>
-        /// Gets a valid NamedURL sub-name from this NamedURL.
-        /// </summary>
-        /// <param name="ID">The unique ID of the sub-name to get.</param>
-        /// <returns>The NamedURL sub-name.</returns>
-        public NamedURL GetSubName(Guid ID)
-        {
-            NamedURL namedURL = null;
-            foreach (NamedURL named in SubNames())
-            {
-                if (named.ID == ID)
-                {
-                    namedURL = named;
-                    break;
-                }
-            }
-            return namedURL;
-        }
-
-        public static NamedURL GetFinalNamedURL(NamedURL startingName, string[] subNames)
-        {
-            NamedURL r = startingName;
-            for (int i = 0; i == subNames.Length; i++)
-            {
-                r = r.GetSubName(subNames[i]);
-            }
-            return r;
-        }
+        public virtual void Navigated(Browser browser) {}
     }
 
     public sealed class LightwaveURLManager
     {
-        private WebControl _webControl = null;
-        public List<NamedURL> lightwaveURLs = null;
+        private List<LightwaveURL> urls = new List<LightwaveURL>();
+        private Browser browser = null;
 
-        public LightwaveURLManager(WebControl webControl)
+        public LightwaveURLManager(Browser browser)
         {
-            lightwaveURLs = new List<NamedURL>();
-            _webControl = webControl;
-            //TODO: Register internal URLs.
-            AddNamedURLs(new NamedURL[]
-            { new SettingsURL(), new BookmarkURL(), new HistoryURL(), new PluginURL(), new NewtabURL(), new FlagsURL()});
+            this.browser = browser;
+            //Register URLS
+
         }
 
-        public void AddNamedURL(NamedURL namedURL)
-        {
-            lightwaveURLs.Add(namedURL);
-        }
 
-        public void AddNamedURLs(NamedURL[] namedURLs)
-        {
-            foreach (NamedURL namedURL in namedURLs)
-            {
-                AddNamedURL(namedURL);
-            }
-        }
-
-        public void RemoveNamedURL(NamedURL namedURL)
-        {
-            lightwaveURLs.Remove(namedURL);
-        }
-
-        public void RemoveNamedURLs(NamedURL[] namedURLs)
-        {
-            foreach (NamedURL namedURL in namedURLs)
-            {
-                RemoveNamedURL(namedURL);
-            }
-        }
-
-        public NamedURL GetNamedURL(string name)
-        {
-            NamedURL namedURL = null;
-            foreach (NamedURL named in lightwaveURLs)
-            {
-                if (named.Name == name)
-                {
-                    namedURL = named;
-                    break;
-                }
-            }
-            return namedURL;
-        }
-
-        public NamedURL GetNamedURL(Guid ID)
-        {
-            NamedURL namedURL = null;
-            foreach (NamedURL named in lightwaveURLs)
-            {
-                if (named.ID == ID)
-                {
-                    namedURL = named;
-                    break;
-                }
-            }
-            return namedURL;
-        }
-
-        public IReadOnlyList<NamedURL> GetLighwaveURLs()
-        {
-            return lightwaveURLs;
-        }
-
-        /// <summary>
-        /// Navigates to the specified URL or searches for a value if it's not a URL.
-        /// </summary>
-        /// <param name="rawSource">The original non-parsed string.</param>
-        public void Navigate(string rawSource)
-        {
-            try
-            {
-                if (!(Uri.TryCreate(rawSource, UriKind.RelativeOrAbsolute, out Uri url)) || Limited(url))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Searching for: \"{url.OriginalString}\"...");
-                    var searchUrl = new Uri($"{BrowserUtils.SearchProvider.SearchSource}{url.ToString()}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"Attempting to navigate to: \"{url.ToString()}\"...");
-                    if (url.ToString().StartsWith("lightwave://"))
-                    {
-                        System.Diagnostics.Debug.WriteLine("Navigating to a LightwaveURL...");
-                        var u = url.ToString();
-                        u = Regex.Replace(u, "lightwave://", "");
-                        var x = u.Split('/');
-                        var name = x[0];
-                        System.Diagnostics.Debug.WriteLine($"Found: {name}.");
-                        var subnames = x.Skip(1).ToArray();
-                        System.Diagnostics.Debug.WriteLine("Checking LightwaveURL");
-                        var named = NamedURL.GetFinalNamedURL(GetNamedURL(name), subnames);
-                        if (named == null)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"The webpage at \"{url.ToString()}\" may be down or it may have been moved to a new address!");
-                            Console.WriteLine();
-                            //TODO: Create error page.
-                            
-                        }
-                        else
-                        {
-                            try
-                            {
-                                named.Action(_webControl);
-                                System.Diagnostics.Debug.WriteLine($"Navigated to: \"{url.ToString()}\" successfully!");
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine(ex.ToString());
-                                //TODO: Create error page.
-
-                            }
-                        }
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Navigating to: \"{url.ToString()}\"...");
-                        _webControl.Source = url;
-                        _webControl.Update();
-                        System.Diagnostics.Debug.WriteLine("Navigation Complete!");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.ToString());
-            }
-        }
-
-        private bool Limited(Uri uri)
-        {
-            if (uri.IsAbsoluteUri == false)
-            {
-                if (!(uri.OriginalString.Contains(".")))
-                    return true;
-            }
-            return false;
-        }
-    }
-
-    public class SettingsURL : NamedURL
-    {
-        public SettingsURL() : base("settings") { }
-
-        public override void Action(WebControl webBrowser)
-        {
-            //TODO: Implement settings.
-
-        }
-    }
-
-    public class BookmarkURL : NamedURL
-    {
-        public BookmarkURL() : base("bookmaks") { }
-
-        public override void Action(WebControl webBrowser)
-        {
-            //TODO: Implement bookmarks.
-
-        }
-    }
-
-    public class HistoryURL : NamedURL
-    {
-        public HistoryURL() : base("history") { }
-
-        public override void Action(WebControl webBrowser)
-        {
-            //TODO: Implement history.
-
-        }
-    }
-
-    public class PluginURL : NamedURL
-    {
-        public PluginURL() : base("plugins") { }
-
-        public override void Action(WebControl webBrowser)
-        {
-            //TODO: Implement plugins.
-
-        }
-    }
-
-    public class NewtabURL : NamedURL
-    {
-        public NewtabURL() : base("newtab") { }
-
-        public override void Action(WebControl webBrowser)
-        {
-            //TODO: Implement newtab.
-
-            //TODO: Delete or comment debug code.
-            webBrowser.Source = new Uri("http://www.google.com/");
-            webBrowser.Update();
-        }
-    }
-
-    public class FlagsURL : NamedURL
-    {
-        public FlagsURL() : base("flags") { }
-
-        public override void Action(WebControl webBrowser)
-        {
-            //TODO: Implement flags.
-
-        }
     }
 }
 

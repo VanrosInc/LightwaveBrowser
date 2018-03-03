@@ -10,7 +10,7 @@ namespace LightwaveBrowser
 {
     internal class ToolstripColortable : ProfessionalColorTable
     {
-        public override Color ToolStripBorder => Color.LightGray;
+        public override Color ToolStripBorder => Color.Transparent;
         public override Color ButtonSelectedHighlight => Color.Silver;
         public override Color ButtonPressedHighlight => Color.Teal;
     }
